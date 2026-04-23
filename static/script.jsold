@@ -1,6 +1,5 @@
 let currentTaskId = null;
 let currentProjectId = null;
-let currentProjectFiles = null;  // Store files for push
 let eventSource = null;
 
 const historyList = document.getElementById('historyList');
@@ -17,108 +16,6 @@ const hostBadge = document.getElementById('hostBadge');
 
 // Set host badge
 hostBadge.innerHTML = '🏠 Replit Ready';
-
-// ==================== FIXED: HISTORY CLICK HANDLER ====================
-function attachHistoryClickHandlers() {
-    document.querySelectorAll('.history-item').forEach(item => {
-        // Remove old listener to avoid duplicates
-        item.removeEventListener('click', item._clickHandler);
-        
-        // Create new handler
-        const handler = async () => {
-            const projectId = item.dataset.id;
-            if (!projectId) return;
-            
-            // Remove active class from all
-            document.querySelectorAll('.history-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            
-            // Load and display project
-            await loadAndDisplayProject(projectId);
-        };
-        
-        // Store handler reference and attach
-        item._clickHandler = handler;
-        item.addEventListener('click', handler);
-    });
-}
-
-async function loadAndDisplayProject(projectId) {
-    try {
-        showLoading("Loading project...");
-        
-        const response = await fetch('/api/history');
-        const data = await response.json();
-        
-        const project = data.history.find(p => p.id === projectId);
-        
-        if (!project) {
-            showError("Project not found!");
-            return;
-        }
-        
-        // Store for GitHub push
-        currentProjectId = project.id;
-        currentProjectFiles = project.files;
-        
-        // Display project
-        displayProjectFromHistory(project);
-        
-        // Enable push button
-        pushGithubBtn.disabled = false;
-        
-        hideLoading();
-        
-    } catch (error) {
-        console.error('Failed to load project:', error);
-        showError("Failed to load project: " + error.message);
-        hideLoading();
-    }
-}
-
-function displayProjectFromHistory(project) {
-    projectTitle.innerHTML = `📜 ${escapeHtml(project.command.substring(0, 60))}`;
-    
-    let filesHtml = '<div class="files-card"><div class="files-header">📄 Generated Files</div><div class="files-list">';
-    
-    if (project.files && project.files.length > 0) {
-        project.files.forEach(file => {
-            filesHtml += `
-                <div class="file-item">
-                    <div class="file-name">📁 ${escapeHtml(file.path)}</div>
-                    <pre class="file-content">${escapeHtml(file.content)}</pre>
-                </div>
-            `;
-        });
-    } else {
-        filesHtml += '<div class="file-item"><div class="file-name">No files available</div></div>';
-    }
-    
-    filesHtml += '</div></div>';
-    
-    const analysisHtml = project.analysis ? `
-        <div class="analysis-card">
-            <h3 style="color: #667eea;">📊 Project Analysis</h3>
-            <div class="analysis-detail">
-                <p><span class="language-tag">🏷️ ${project.analysis.detected_language || 'unknown'}</span>
-                <span class="language-tag">🎯 ${project.analysis.project_type || 'unknown'}</span></p>
-                <p><strong>💭 Reasoning:</strong> ${project.analysis.reasoning || 'No reasoning available'}</p>
-            </div>
-        </div>
-    ` : '';
-    
-    chatArea.innerHTML = `
-        <div style="max-width: 900px; margin: 0 auto;">
-            <div class="summary-card">
-                <h4>✅ ${escapeHtml(project.summary || 'Project generated')}</h4>
-                <p>📅 Generated: ${new Date(project.timestamp).toLocaleString()}</p>
-                <p>🎉 ${project.files ? project.files.length : 0} files | 🚀 Language: ${project.language || 'unknown'}</p>
-            </div>
-            ${analysisHtml}
-            ${filesHtml}
-        </div>
-    `;
-}
 
 // ==================== ANALYZE BUTTON (Model 1) ====================
 analyzeBtn.addEventListener('click', async () => {
@@ -214,7 +111,6 @@ window.confirmAndGenerate = async function() {
         } else if (data.type === 'complete') {
             eventSource.close();
             currentProjectId = data.project.project_id;
-            currentProjectFiles = data.project.files;
             showGeneratedProject(data.project);
             modelStatus.innerHTML = '<span>🧠 DualMindAI v1.0 | ⚡ Model 1 Ready | 🧠 Model 2 Ready</span>';
         } else if (data.type === 'error') {
@@ -224,6 +120,7 @@ window.confirmAndGenerate = async function() {
         }
     };
     
+    // Start generation
     fetch(`/api/generate/${currentTaskId}`, { method: 'POST' });
 };
 
@@ -249,7 +146,7 @@ function showGeneratedProject(project) {
     progressArea.style.display = 'none';
     pushGithubBtn.disabled = false;
     
-    projectTitle.innerHTML = `✅ ${(project.language || 'Project').toUpperCase()} Project | ${project.total_files} files`;
+    projectTitle.innerHTML = `✅ ${project.language.toUpperCase()} Project | ${project.total_files} files`;
     
     let filesHtml = '<div class="files-card"><div class="files-header">📄 Generated Files</div><div class="files-list">';
     project.files.forEach(file => {
@@ -293,7 +190,7 @@ pushGithubBtn.addEventListener('click', async () => {
         return;
     }
     if (!currentProjectId) {
-        alert('Please generate a project first or select from history!');
+        alert('Please generate a project first!');
         return;
     }
     
@@ -345,38 +242,18 @@ function renderHistory(history) {
         </div>
     `).join('');
     
-    // FIXED: Attach click handlers after rendering
-    attachHistoryClickHandlers();
+    document.querySelectorAll('.history-item').forEach(el => {
+        el.addEventListener('click', () => {
+            document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+        });
+    });
 }
-
-// ==================== LOADING INDICATOR ====================
-function showLoading(message) {
-    chatArea.innerHTML = `
-        <div style="text-align: center; padding: 50px;">
-            <div class="spinner" style="width: 40px; height: 40px; border: 3px solid #2a2a3a; border-top-color: #667eea; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 20px;"></div>
-            <p>${message}...</p>
-        </div>
-    `;
-}
-
-function hideLoading() {
-    // Just a placeholder, actual content will be replaced
-}
-
-// Add spinner animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-`;
-document.head.appendChild(style);
 
 // ==================== NEW PROJECT ====================
 document.getElementById('newProjectBtn').addEventListener('click', () => {
     currentTaskId = null;
     currentProjectId = null;
-    currentProjectFiles = null;
     analysisResult.style.display = 'none';
     progressArea.style.display = 'none';
     commandInput.value = '';
