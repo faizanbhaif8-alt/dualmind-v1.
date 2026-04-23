@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 DualMindAI v1.0 | Dual Model Project Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>🧠 DualMindAI</h1>
+                <p>v1.0 • Model 1 Fast + Model 2 Deep</p>
+                <div class="host-badge" id="hostBadge">📍 Detecting...</div>
+            </div>
+            
+            <div class="sidebar-new-btn">
+                <button id="newProjectBtn">➕ New Project</button>
+            </div>
+            
+            <div class="sidebar-history">
+                <h3>📁 Project History</h3>
+                <div id="historyList" class="history-list"></div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="model-info">
+                    <span class="model-dot fast"></span> Model 1: Fast
+                    <span class="model-dot deep"></span> Model 2: Deep
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="main-header">
+                <h2 id="projectTitle">✨ Create a New Project</h2>
+            </div>
+            
+            <div class="main-body" id="chatArea">
+                <div class="welcome-card">
+                    <div class="welcome-icon">🧠</div>
+                    <h3>DualMindAI v1.0</h3>
+                    <p>
+                        ⚡ <span class="highlight">Model 1 (Fast)</span> - Smart Analyzer (1-2 sec)<br>
+                        🧠 <span class="highlight">Model 2 (Deep)</span> - Code Generator (8-12 sec)<br>
+                        🏠 <span class="highlight">Replit Optimized</span> - Auto-adjusted for hosting
+                    </p>
+                    <div class="example-commands">
+                        <strong>📝 Try these commands:</strong>
+                        <ul>
+                            <li>• "Mujhe ek Telegram bot banvana hai jo weather update de"</li>
+                            <li>• "FastAPI se REST API banao with 3 endpoints"</li>
+                            <li>• "Automation bot jo daily news scrape kare"</li>
+                            <li>• "React mein todo app banao"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="main-footer">
+                <div class="input-group">
+                    <input type="text" id="commandInput" placeholder="Example: mujhe ek automation bot banvana hai jo daily weather report bheje">
+                    <button id="analyzeBtn">🔍 Analyze (Model 1)</button>
+                </div>
+                
+                <div id="analysisResult" style="display: none;"></div>
+                <div id="progressArea" style="display: none;"></div>
+                
+                <div class="github-section">
+                    <div class="github-input-group">
+                        <input type="text" id="repoNameInput" placeholder="Repository name (e.g., my-awesome-bot)">
+                        <button id="pushGithubBtn" disabled>🐙 Push to GitHub</button>
+                    </div>
+                </div>
+                
+                <div class="model-status" id="modelStatus">
+                    <span>🧠 DualMindAI v1.0 | ⚡ Model 1 Ready | 🧠 Model 2 Standby</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/static/script.js"></script>
+</body>
+</html>
